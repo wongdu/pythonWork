@@ -11,9 +11,9 @@ from email.header import Header
 from email.utils import parseaddr, formataddr
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
-import mysql.connector
 import logging
 import smtplib
+import mysql.connector
 
 dbUser = 'root'
 dbPassword = 'xxx'

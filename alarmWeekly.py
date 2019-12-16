@@ -179,9 +179,9 @@ def getTableAlarms():
 
     # 添加表格头
     tableHeader = rowStart
-    tableHeader = tableHeader + domainStart + '主机名' + domainEnd
-    tableHeader = tableHeader + domainStart + 'note' + domainEnd
-    tableHeader = tableHeader + domainStart + '告警发生时间' + domainEnd
+    tableHeader = tableHeader + '<th>' + '主机名' + '</th>'
+    tableHeader = tableHeader + '<th>' + 'note' + '</th>'
+    tableHeader = tableHeader + '<th>' + '告警发生时间' + '</th>'    
     tableHeader = tableHeader + rowEnd
     alarmsTable = alarmsTable + tableHeader
 
@@ -214,9 +214,9 @@ def getTableAlerts():
 
    # 添加表格头
     tableHeader = rowStart
-    tableHeader = tableHeader + domainStart + '主机名' + domainEnd
-    tableHeader = tableHeader + domainStart + 'note' + domainEnd
-    tableHeader = tableHeader + domainStart + '异常发生时间' + domainEnd
+    tableHeader = tableHeader + '<th>' + '主机名' + '</th>'
+    tableHeader = tableHeader + '<th>' + 'note' + '</th>'
+    tableHeader = tableHeader + '<th>' + '异常发生时间' + '</th>'
     tableHeader = tableHeader + rowEnd
     alertsTable = alertsTable + tableHeader
 

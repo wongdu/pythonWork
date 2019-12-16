@@ -36,7 +36,7 @@ tableStart = '''<table  cellpadding="0" style="border-collapse:collapse;width:88
  <colgroup ><col  style="width:108.0px;">
  <col  span="3" style="width:87.0px;">
  </colgroup><tbody ><tr  height="40">
-  <td  align="center" class="xl67" colspan="10" height="40" valign="middle" width="888" style="padding-top:1.0px;padding-right:1.0px;padding-left:1.0px;color:#000000;font-size:18.7px;font-weight:400;font-style:normal;text-decoration:none solid #000000;font-family:微软雅黑,sans-serif;border:1.0px solid #666666;background-image:none;background-position:.0% .0%;background-size:auto;background-attachment:scroll;background-origin:padding-box;background-clip:border-box;background-color:#bdd7ee;">每周告警送统计</td>
+  <td  align="center" class="xl67" colspan="10" height="40" valign="middle" width="888" style="padding-top:1.0px;padding-right:1.0px;padding-left:1.0px;color:#000000;font-size:18.7px;font-weight:400;font-style:normal;text-decoration:none solid #000000;font-family:微软雅黑,sans-serif;border:1.0px solid #666666;background-image:none;background-position:.0% .0%;background-size:auto;background-attachment:scroll;background-origin:padding-box;background-clip:border-box;background-color:#bdd7ee;">每周告警统计</td>
  </tr >'''
 
 rowStart = '''
@@ -176,6 +176,15 @@ def getAlerts():
 def getTableAlarms():
     alarms = getAlarms()
     alarmsTable = tableStart
+
+    # 添加表格头
+    tableHeader = rowStart
+    tableHeader = tableHeader + domainStart + '主机名' + domainEnd
+    tableHeader = tableHeader + domainStart + 'note' + domainEnd
+    tableHeader = tableHeader + domainStart + '告警发生时间' + domainEnd
+    tableHeader = tableHeader + rowEnd
+    alarmsTable = alarmsTable + tableHeader
+
     for alarm in alarms:
         if len(alarm) != 4:
             continue
@@ -202,6 +211,15 @@ def getTableAlarms():
 def getTableAlerts():
     alerts = getAlerts()
     alertsTable = tableStart
+
+   # 添加表格头
+    tableHeader = rowStart
+    tableHeader = tableHeader + domainStart + '主机名' + domainEnd
+    tableHeader = tableHeader + domainStart + 'note' + domainEnd
+    tableHeader = tableHeader + domainStart + '异常发生时间' + domainEnd
+    tableHeader = tableHeader + rowEnd
+    alertsTable = alertsTable + tableHeader
+
     for alert in alerts:
         if len(alert) != 3:
             continue

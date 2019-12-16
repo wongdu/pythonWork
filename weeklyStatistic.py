@@ -456,10 +456,9 @@ def getCurrMonthLastworkIndex():
     return idx
 
 
-# 获取当前周最后一个工作日是本月的倒数第几个，即倒序索引
+# 获取当前周最后一个工作日后面还有几个本月的最后工作日
 # 思路：从当前位置开始统计总共有几个最后工作日，所以应该是
 # 当前月的总共的最后工作日个数减去获取的该值才是第几个即索引
-# 返回0表示是上个月的最后一个工作日
 def getCurrMonthLastworkBackIndex():
     dtStart = datetime.now()
     weekIdx = dtStart.weekday()
@@ -476,7 +475,7 @@ def getCurrMonthLastworkBackIndex():
             # 1号恰好是最后一个工作日
             lastWorkDay.append(
                 addZeroPrefix(currMon) + addZeroPrefix(dtStart.day))
-            dtStart = dtStart + timedelta(days=6)
+            dtStart = dtStart + timedelta(days=8)
         elif weekIdx > 4:
             # 1号是周末，可能周六或周天，先到当前周最后一天，然后下周小周上6天班
             dtStart = dtStart + timedelta(days=(6 - weekIdx + 6))
@@ -488,6 +487,7 @@ def getCurrMonthLastworkBackIndex():
             # 1号恰好是最后一个工作日
             lastWorkDay.append(
                 addZeroPrefix(currMon) + addZeroPrefix(dtStart.day))
+            dtStart = dtStart + timedelta(days=6)            
         elif weekIdx == 6:
             # 1号是星期天，先到当前周最后一天，然后下周小周上6天班
             dtStart = dtStart + timedelta(days=5)
@@ -500,7 +500,7 @@ def getCurrMonthLastworkBackIndex():
             break
         restDouble = dateTimeWeekDouble(dtStart)
         if None == restDouble:
-            return []
+            return 0
         if restDouble and dtStart.weekday() == 4:
             lastWorkDay.append(
                 addZeroPrefix(currMon) + addZeroPrefix(dtStart.day))
@@ -850,7 +850,7 @@ def updateUserSentFlag(userSend, updateValue):
     currIdx = getCurrMonthLastworkBackIndex()
     currMonSize = len(getCurrMonLastWorkDay())
     # +1是因为修改的是当前周的统计信息，而减掉的是包含当前周及以后的数量
-    spanSize = currMonSize - currIdx + 1
+    spanSize = currMonSize - currIdx
     idxBase = userSend.rfind('</td>')
     while spanSize > 0:
         idxTemp = userSend.rfind('</td>', 0, idxBase - len('</td>'))
@@ -867,7 +867,7 @@ def updateUserNoSentFlag(userSend):
     currIdx = getCurrMonthLastworkBackIndex()
     currMonSize = len(getCurrMonLastWorkDay())
     # +1是因为修改的是当前周的统计信息，而减掉的是包含当前周及以后的数量
-    spanSize = currMonSize - currIdx + 1
+    spanSize = currMonSize - currIdx
     idxBase = userSend.rfind('</td>')
     while spanSize > 0:
         idxTemp = userSend.rfind('</td>', 0, idxBase - len('</td>'))
@@ -1111,8 +1111,8 @@ def sendEmailWithPic(bodyContent):
     # content = content.decode('utf-8').encode('gbk')
     msg.attach(content)
 
-    fp = open('C:\\Users\\test\\Desktop\\cha.png', 'rb')
-    # fp = open('/usr/sbin/cha.png', 'rb')
+    # fp = open('C:\\Users\\test\\Desktop\\cha.png', 'rb')
+    fp = open('/usr/sbin/cha.png', 'rb')
     msgImage = MIMEImage(fp.read())
     fp.close()
     msgImage.add_header('Content-ID', 'image1')  # 这个id用于上面html获取图片

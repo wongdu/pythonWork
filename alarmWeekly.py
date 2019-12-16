@@ -13,7 +13,7 @@ import mysql.connector
 import logging
 
 user = 'root'
-password = 'Imprexion!'
+password = 'xxx'
 database = 'alarms'
 
 mysqlConn = None

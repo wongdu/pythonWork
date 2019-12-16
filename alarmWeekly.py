@@ -143,6 +143,7 @@ def composeEmail(table1Content, table2Content):
     retContent = retContent + blankLine + blankLine
     retContent = retContent + '告警表格如下：'
     retContent = retContent + table1Content
+    retContent = retContent + blankLine 
     retContent = retContent + '异常表格如下：'
     retContent = retContent + table2Content
     retContent = retContent + "</body>"
@@ -227,6 +228,7 @@ def procAlarmWeekly():
         return False
 
     sendAlarmWeekly(composeEmail(getTableAlarms(), getTableAlerts()))
+    unInitMysql()
 
 
 def sendAlarmWeekly(bodyContent):

@@ -890,6 +890,9 @@ def updateUserSentRow(toSendTable, userName, updateValue):
         return toSendTable
     idxBase = toSendTable.find(userName)
     idxUpdate = toSendTable.find('</tr>', idxBase)
+    # 找不到用户名，可能是新用户，暂不处理，后面添加了新用户的行信息后再处理
+    if idxBase == -1 or idxUpdate == -1:
+        return toSendTable
     newUserSentFlag = updateUserSentFlag(toSendTable[idxBase:idxUpdate],
                                          updateValue)
     retValue = toSendTable[:idxBase] + newUserSentFlag + toSendTable[idxUpdate:]
@@ -901,6 +904,9 @@ def updateUserNoSentRow(toSendTable, userName):
         return toSendTable
     idxBase = toSendTable.find(userName)
     idxUpdate = toSendTable.find('</tr>', idxBase)
+    # 因为先添加新用户，然后再更新未发送标记，不过为了跟更新发送标记一致，所以也判断处理
+    if idxBase == -1 or idxUpdate == -1:
+        return toSendTable
     newUserSentFlag = updateUserNoSentFlag(toSendTable[idxBase:idxUpdate])
     retValue = toSendTable[:idxBase] + newUserSentFlag + toSendTable[idxUpdate:]
     return retValue

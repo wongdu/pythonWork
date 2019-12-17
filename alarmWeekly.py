@@ -21,10 +21,13 @@ dbName = 'alarms'
 
 envTest = ['office_test_Num10', 'K1', 'K2', 'K3']
 
-from_addr = 'wang.haidong@imprexion.com.cn'
-from_password = '_Yx123456'
+from_addr = 'xxx@imprexion.com.cn'
+from_password = 'xxx'
 # 输入收件人地址:
-to_addr = 'wang.haidong@imprexion.com.cn'
+toAddrs = 'xxx@imprexion.com.cn,\
+    xxx@imprexion.com.cn,\
+    xxx@imprexion.com.cn'
+
 # 输入 SMTP 服务器地址:
 # smtp_server = 'smtp.imprexion.com.cn'
 smtp_server = 'smtp.mxhichina.com'
@@ -254,13 +257,14 @@ def sendAlarmWeekly(bodyContent):
         return
 
     msg = MIMEText(bodyContent, 'html', 'utf-8')
-    msg['From'] = _format_addr('告警统计机器人 <%s>' % from_addr)
-    msg['To'] = _format_addr('研发部 <%s>' % to_addr)
-    msg['Subject'] = Header(getEmailSubject(), 'utf-8').encode()
+    msg['From'] = _format_addr('告警统计机器人 <%s>' % from_addr) # 显示的发件人
+    # msg['To'] = _format_addr('研发部 <%s>' % to_addr)          # 单个显示的收件人
+    msg['To'] = toAddrs                                          # 多个显示的收件人
+    msg['Subject'] = Header(getEmailSubject(), 'utf-8').encode() # 显示的邮件标题
     server = smtplib.SMTP_SSL(smtp_server, 465)
     # server.set_debuglevel(1)
     server.login(from_addr, from_password)
-    server.sendmail(from_addr, [to_addr], msg.as_string())
+    server.sendmail(from_addr, toAddrs.split(','), msg.as_string())
     server.quit()
 
 

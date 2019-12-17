@@ -487,7 +487,7 @@ def getCurrMonthLastworkBackIndex():
             # 1号恰好是最后一个工作日
             lastWorkDay.append(
                 addZeroPrefix(currMon) + addZeroPrefix(dtStart.day))
-            dtStart = dtStart + timedelta(days=6)            
+            dtStart = dtStart + timedelta(days=6)
         elif weekIdx == 6:
             # 1号是星期天，先到当前周最后一天，然后下周小周上6天班
             dtStart = dtStart + timedelta(days=5)
@@ -1045,22 +1045,30 @@ def _format_addr(s):
     return formataddr((Header(name, 'utf-8').encode(), addr))
 
 
-def getEmailSubject():
-    dtStart = datetime.now() - timedelta(days=6)
-    startMon = dtStart.month
-    startDay = addZeroPrefix(dtStart.day)
-    doubleRest = weekDouble()
-    dtLastWorkDay = datetime.now()
-    if doubleRest:
-        dtLastWorkDay = datetime.now() - timedelta(days=2)
+def getCurrentWeekWorkDaySpan():
+    dtStart = datetime.now()
+    weekIdx = dtStart.weekday()
+    startDayDouble = dateTimeWeekDouble(dtStart)
+    if None == startDayDouble:
+        return ''
+
+    weekIdx = dtStart.weekday()
+    dtStart = dtStart - timedelta(days=weekIdx)
+    dtEnd = dtStart
+    if startDayDouble:
+        # 双休
+        dtEnd = dtStart + timedelta(days=4)
     else:
-        dtLastWorkDay = datetime.now() - timedelta(days=1)
-    lastWorkDayMon = dtLastWorkDay.month
-    lastWorkDay = addZeroPrefix(dtLastWorkDay.day)
+        dtEnd = dtStart + timedelta(days=5)
+
+    return addZeroPrefix(dtStart.month) + '.' + addZeroPrefix(
+        dtStart.day) + '-' + str(dtEnd.year) + '.' + addZeroPrefix(
+            dtEnd.month) + '.' + addZeroPrefix(dtEnd.day)
+
+
+def getEmailSubject():
     # _12.09-2019.12.14
-    return '周报统计_' + str(startMon) + '.' + str(startDay) + '-' + str(
-        dtLastWorkDay.year) + '.' + str(lastWorkDayMon) + '.' + str(
-            lastWorkDay)
+    return '周报统计_' + getCurrentWeekWorkDaySpan()
 
 
 def composeEmail(tableContent,hardInfo,suggestInfo):

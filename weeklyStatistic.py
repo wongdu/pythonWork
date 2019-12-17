@@ -518,6 +518,10 @@ def getCurrMonthLastworkBackIndex():
 def dateTimeWeekDouble(dtStamp):
     if not isinstance(dtStamp, datetime):
         return
+    # 根据当前周的星期天来判断，否则可能不对
+    weekIdx = dtStamp.weekday()
+    dtStamp = dtStamp + timedelta(days=(6 - weekIdx))
+
     dtSecond = int(dtStamp.timestamp())
     dtDay = int(dtSecond / 86400)
     modDay = dtDay % 14

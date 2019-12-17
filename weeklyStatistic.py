@@ -374,7 +374,7 @@ def parseForLastWeeklyStatisticTable(msgDict):
     else:
         mailTo = strMailTo[idxLeftToName + 1:idxRightToName]
 
-    if mailFrom != 'wang.haidong':
+    if mailFrom != 'wang.xxx':
         return ''
     # 如果邮件不是发送到研发部就肯定不是周报统计，直接跳过
     # if mailTo != 'rd':
@@ -905,6 +905,7 @@ def updateUserNoSentRow(toSendTable, userName):
     idxBase = toSendTable.find(userName)
     idxUpdate = toSendTable.find('</tr>', idxBase)
     # 因为先添加新用户，然后再更新未发送标记，不过为了跟更新发送标记一致，所以也判断处理
+    # 也有一种情况是：删除了该用户，还想更新未发送标记，那就直接返回
     if idxBase == -1 or idxUpdate == -1:
         return toSendTable
     newUserSentFlag = updateUserNoSentFlag(toSendTable[idxBase:idxUpdate])
@@ -970,6 +971,24 @@ def procNewUser(toSendTable, userName):
                                             len('</tr>')],
                                 userName) + toSendTable[idxLast2ndEndTr +
                                                         len('</tr>'):]
+    return tempValue
+
+
+def procDeleteUser(toSendTable, userName):
+    if '' == userName.strip():
+        return toSendTable
+    # 如果表格中没有该用户，那就无需操作
+    idxUserName = toSendTable.find(userName)
+    if -1 == idxUserName:
+        return toSendTable
+
+    idxCurrRowStart = toSendTable.rfind('<tr', 0, idxUserName - len(userName))
+    idxNextRowStart = toSendTable.find('<tr', idxUserName + len(userName))
+    if -1 == idxCurrRowStart or -1 == idxNextRowStart:
+        return toSendTable
+
+    tempValue = toSendTable[:idxCurrRowStart +
+                            len('<tr')] + toSendTable[idxNextRowStart:]
     return tempValue
 
 
@@ -1213,8 +1232,24 @@ def sendWeekly():
             logging.warning(mailFrom)
             return
 
-    # 添加新用户
-    toSendWeeklyTable = procNewUser(toSendWeeklyTable, '王三浩')
+    # 0、新用户列表
+    # newUsers = ['杜蓉蓉','王菲飞']
+    newUsers = []
+    # 1、添加新用户
+    for newUser in newUsers:
+        toSendWeeklyTable = procNewUser(toSendWeeklyTable, newUser)
+    # 2、更新新用户的发送标记
+    for newUser in newUsers:
+        if newUser in lSent:
+            toSendWeeklyTable = updateUserSentRow(toSendWeeklyTable, newUser,
+                                                  '✅')
+
+    # 0、待删除用户列表，以后无需统计
+    # toDeleteUsers = ['杜蓉蓉','王菲飞']
+    toDeleteUsers = []
+    # 1、删除用户行信息
+    for delUser in toDeleteUsers:
+        toSendWeeklyTable = procDeleteUser(toSendWeeklyTable, delUser)
 
     # 更新未发送周报标记
     for k, v in AllStaffs.items():

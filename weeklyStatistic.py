@@ -1159,7 +1159,11 @@ def sendWeekly():
     for msgId, msgDict in msgDicts.items():
         subject, mailFrom, mailTo, hardContents, subjectContents = parseMsgDict(
             msgDict)
+        # 只关注周报邮件，跳过普通邮件
         if hardContents == None or subjectContents == None:
+            continue
+        # 某些同事发了图片格式的周报，解析不了'困难'和'建议'就都是''，不是周报的这两项都是None就不处理
+        if hardContents == '' or subjectContents == '':
             # 周报可能是图片格式
             toSendWeeklyTable = updateUserSentRow(toSendWeeklyTable,
                                                   AllStaffs[mailFrom], '✅')

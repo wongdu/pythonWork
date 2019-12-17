@@ -1096,14 +1096,17 @@ def getEmailSubject():
     return '周报统计_' + getCurrentWeekWorkDaySpan()
 
 
-def composeEmail(tableContent,hardInfo,suggestInfo):
+def composeEmail(tableContent, hardInfo, suggestInfo):
+    # 发送的表格的提示信息
+    sentDescrip = '<div style="margin: 0px; padding: 0px; border: 0px; outline: 0px; font-variant-ligatures: normal; clear: both;"><span style="margin: 0px; padding: 0px; border: 0px; outline: 0px; font-family:微软雅黑; font-variant-ligatures: normal; font-weight: 700;">1、周报发送情况详细结果如下：</span></div>'
     retContent = ''
-    blankLine='<div><br></div>'
-    wrapInfoStart='<div style="font-family: '+'Microsoft YaHei UI'+', Tahoma; line-height: normal; clear: both;">'
-    wrapInfoEnd='</div>'
+    blankLine = '<div><br></div>'
+    wrapInfoStart = '<div style="font-family: ' + 'Microsoft YaHei UI' + ', Tahoma; line-height: normal; clear: both;">'
+    wrapInfoEnd = '</div>'
     retContent = retContent + '<body>Hi，各位好:<br/>以下是本周研发周报统计情况反馈，请查阅，谢谢！！'
     # 添加两个空白行
-    retContent = retContent + blankLine+blankLine
+    retContent = retContent + blankLine + blankLine
+    retContent = retContent + sentDescrip
     retContent = retContent + tableContent
     retContent = retContent + "</body>"
     # 准备添加hard和suggest，先添加一个空白行
@@ -1188,6 +1191,7 @@ def sendWeekly():
         if hardContents == None or subjectContents == None:
             continue
         # 某些同事发了图片格式的周报，解析不了'困难'和'建议'就都是''，不是周报的这两项都是None就不处理
+        # 后面再更新新用户的发送标记，因为新用户还没有加到table中
         if hardContents == '' or subjectContents == '':
             # 周报可能是图片格式
             toSendWeeklyTable = updateUserSentRow(toSendWeeklyTable,

@@ -462,10 +462,10 @@ def getCurrMonthLastworkIndex():
     return idx
 
 
-# 获取当前周最后一个工作日后面还有几个本月的最后工作日
-# 思路：从当前位置开始统计总共有几个最后工作日，所以应该是
-# 当前月的总共的最后工作日个数减去获取的该值才是第几个即索引
-def getCurrMonthLastworkBackIndex():
+# 获取当前周最后一个工作日后面(不计算当前周)，还有几个本月的最后工作日
+# 思路：从当前位置开始统计总共有几个最后工作日，
+# 即当前月的总共的最后工作日个数-获取的该值=当前最后工作日的索引
+def getLastworkAfterCurrWeek():
     dtStart = datetime.now()
     weekIdx = dtStart.weekday()
     startDayDouble = dateTimeWeekDouble(dtStart)
@@ -538,6 +538,7 @@ def dateTimeWeekDouble(dtStamp):
 
 
 # 获取当前月每周最后一个工作日的数量
+# 注意区别：获取当前月中当前周后面(不计算当前周)，还有几个一周最后工作日
 def getCurrMonLastWorkDay():
     dtStart = datetime.now().replace(day=1)
     weekIdx = dtStart.weekday()
@@ -547,18 +548,21 @@ def getCurrMonLastWorkDay():
 
     currMon = dtStart.month
     lastWorkDay = []
-    # 如果1号是最后一个工作日就直接加到返回的列表中
+    # 如果1号是最后一个工作日就直接加到返回的列表中，
+    # 如果不是就跳到当前周的最后一个工作日，
+    # 区别求当前周后面(不计入内)的最后工作日个数，因为那个函数是跳过当前周的最后工作日
     if startDayDouble:
         # 当前为大周双休
         if weekIdx == 4:
             # 1号恰好是最后一个工作日
             lastWorkDay.append(
                 addZeroPrefix(currMon) + addZeroPrefix(dtStart.day))
-            dtStart = dtStart + timedelta(days=6)
+            dtStart = dtStart + timedelta(days=8)
         elif weekIdx > 4:
             # 1号是周末，可能周六或周天，先到当前周最后一天，然后下周小周上6天班
             dtStart = dtStart + timedelta(days=(6 - weekIdx + 6))
         else:
+            # 跳到当前双休周的周五，下面while循环自然会判断是否添加到列表中
             dtStart = dtStart + timedelta(days=(4 - weekIdx))
     else:
         # 当前为小周单休
@@ -566,10 +570,12 @@ def getCurrMonLastWorkDay():
             # 1号恰好是最后一个工作日
             lastWorkDay.append(
                 addZeroPrefix(currMon) + addZeroPrefix(dtStart.day))
+            dtStart = dtStart + timedelta(days=6)
         elif weekIdx == 6:
-            # 1号是星期天，先到当前周最后一天，然后下周小周上6天班
+            # 1号是星期天，先到当前周最后一天，然后下周大周上5天班
             dtStart = dtStart + timedelta(days=5)
         else:
+            # 跳到当前单休周的周六，下面while循环自然会判断是否添加到列表中
             dtStart = dtStart + timedelta(days=(5 - weekIdx))
 
     while True:
@@ -857,7 +863,7 @@ def checkFirstWeeklyInNewMonth(weeklyStatisticTable):
 
 
 def updateUserSentFlag(userSend, updateValue):
-    currIdx = getCurrMonthLastworkBackIndex()
+    currIdx = getLastworkAfterCurrWeek()
     currMonSize = len(getCurrMonLastWorkDay())
     # +1是因为修改的是当前周的统计信息，而减掉的是包含当前周及以后的数量
     spanSize = currMonSize - currIdx
@@ -874,7 +880,7 @@ def updateUserSentFlag(userSend, updateValue):
 
 
 def updateUserNoSentFlag(userSend):
-    currIdx = getCurrMonthLastworkBackIndex()
+    currIdx = getLastworkAfterCurrWeek()
     currMonSize = len(getCurrMonLastWorkDay())
     # +1是因为修改的是当前周的统计信息，而减掉的是包含当前周及以后的数量
     spanSize = currMonSize - currIdx

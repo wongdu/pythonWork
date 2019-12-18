@@ -28,7 +28,9 @@ user = 'xxx@imprexion.com.cn'
 password = 'xxx'
 
 # 输入收件人地址:
-to_addr = 'xxx@imprexion.com.cn'
+toAddrs = 'xxx@imprexion.com.cn,\
+    xxx@imprexion.com.cn,\
+    xxx@imprexion.com.cn'
 # 输入 SMTP 服务器地址:
 smtp_server = 'smtp.mxhichina.com'
 
@@ -1162,9 +1164,10 @@ def sendEmailWithPic(bodyContent):
     msg = MIMEMultipart('related')
     content = MIMEText(bodyContent, 'html', 'utf-8')
 
-    msg['From'] = _format_addr('周报统计机器人 <%s>' % user)
-    msg['To'] = _format_addr('研发部 <%s>' % to_addr)
-    msg['Subject'] = Header(getEmailSubject(), 'utf-8').encode()
+    msg['From'] = _format_addr('周报统计机器人 <%s>' % user)       # 显示的发件人
+    # msg['To'] = _format_addr('研发部 <%s>' % to_addr)           # 单个显示的收件人
+    msg['To'] = toAddrs                                           # 多个显示的收件人
+    msg['Subject'] = Header(getEmailSubject(), 'utf-8').encode()  # 显示的邮件标题
     # 如果有编码格式问题导致乱码，可以进行格式转换：
     # content = content.decode('utf-8').encode('gbk')
     msg.attach(content)
@@ -1180,7 +1183,7 @@ def sendEmailWithPic(bodyContent):
     server = smtplib.SMTP_SSL(smtp_server, 465)
     # server.set_debuglevel(1)
     server.login(user, password)
-    server.sendmail(user, [to_addr], msg.as_string())
+    server.sendmail(user, toAddrs.split(','), msg.as_string())
     server.quit()
 
 

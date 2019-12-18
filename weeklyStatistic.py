@@ -47,9 +47,15 @@ logging.basicConfig(
 
 
 def weekDouble():
-    currentSecond = int(time.time())
-    currentDay = int(currentSecond / 86400)
-    modDay = currentDay % 14
+    dtStamp = datetime.now()
+
+    # 根据当前周的星期天来判断，否则可能不对
+    weekIdx = dtStamp.weekday()
+    dtStamp = dtStamp + timedelta(days=(6 - weekIdx))
+
+    dtSecond = int(dtStamp.timestamp())
+    dtDay = int(dtSecond / 86400)
+    modDay = dtDay % 14
     if modDay < 7:
         return False
     else:

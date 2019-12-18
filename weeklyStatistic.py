@@ -864,7 +864,11 @@ def updateUserSentFlag(userSend, updateValue):
     currIdx = getLastworkAfterCurrWeek()
     currMonSize = len(getCurrMonLastWorkDay())
     # +1是因为修改的是当前周的统计信息，而减掉的是包含当前周及以后的数量
-    spanSize = currMonSize - currIdx
+    # spanSize = currMonSize - currIdx
+
+    # 现在获取的已经就是当前周后面的最后工作日数量，
+    # 所以直接从后往前跨过去就好，无需用当前月总的最后工作日数量-当前周后面的最后工作日数量
+    spanSize=currIdx
     idxBase = userSend.rfind('</td>')
     while spanSize > 0:
         idxTemp = userSend.rfind('</td>', 0, idxBase - len('</td>'))
@@ -881,7 +885,11 @@ def updateUserNoSentFlag(userSend):
     currIdx = getLastworkAfterCurrWeek()
     currMonSize = len(getCurrMonLastWorkDay())
     # +1是因为修改的是当前周的统计信息，而减掉的是包含当前周及以后的数量
-    spanSize = currMonSize - currIdx
+    # spanSize = currMonSize - currIdx
+
+    # 现在获取的已经就是当前周后面的最后工作日数量，
+    # 所以直接从后往前跨过去就好，无需用当前月总的最后工作日数量-当前周后面的最后工作日数量
+    spanSize=currIdx
     idxBase = userSend.rfind('</td>')
     while spanSize > 0:
         idxTemp = userSend.rfind('</td>', 0, idxBase - len('</td>'))

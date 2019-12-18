@@ -1147,13 +1147,13 @@ def sendEmail(bodyContent):
 
     msg = MIMEText(bodyContent, 'html', 'utf-8')
     msg['From'] = _format_addr('周报统计机器人 <%s>' % user)
-    msg['To'] = _format_addr('研发部 <%s>' % to_addr)
+    # msg['To'] = _format_addr('研发部 <%s>' % to_addr)
     msg['Subject'] = Header(getEmailSubject(), 'utf-8').encode()
     # server = smtplib.SMTP(smtp_server, 25)
     server = smtplib.SMTP_SSL(smtp_server, 465)
     # server.set_debuglevel(1)
     server.login(user, password)
-    server.sendmail(user, [to_addr], msg.as_string())
+    # server.sendmail(user, [to_addr], msg.as_string())
     server.quit()
 
 

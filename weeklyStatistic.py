@@ -473,32 +473,34 @@ def getLastworkAfterCurrWeek():
         return 0
 
     currMon = dtStart.month
-    lastWorkDay = []
-    # 如果1号是最后一个工作日就直接加到返回的列表中
+    # 不管如何，在下面开始while循环开始计数前，跳到下周的最后一个工作日
     if startDayDouble:
         # 当前为大周双休
         if weekIdx == 4:
-            # 1号恰好是最后一个工作日
-            lastWorkDay.append(
-                addZeroPrefix(currMon) + addZeroPrefix(dtStart.day))
+            # 今天周五恰好是双休最后一个工作日，
+            # +8天跳到下周六(+2跳到本周周天然后+6跳到下周小周的周六)
             dtStart = dtStart + timedelta(days=8)
         elif weekIdx > 4:
-            # 1号是周末，可能周六或周天，先到当前周最后一天，然后下周小周上6天班
+            # 今天是周末，可能周六或周天，先到当前周最后一天：6 - weekIdx，
+            # 然后下周小周上6天班所以+6
             dtStart = dtStart + timedelta(days=(6 - weekIdx + 6))
         else:
-            dtStart = dtStart + timedelta(days=(4 - weekIdx))
+            # 下面这行只是跳到双休的周五，应该+2跳到本周周天然后+6跳到下周小周的周六
+            # dtStart = dtStart + timedelta(days=(4 - weekIdx)) 
+            dtStart = dtStart + timedelta(days=(6 - weekIdx + 6)) # 其实同上面周末情形一样
     else:
         # 当前为小周单休
         if weekIdx == 5:
-            # 1号恰好是最后一个工作日
-            lastWorkDay.append(
-                addZeroPrefix(currMon) + addZeroPrefix(dtStart.day))
+            # 今天周六恰好是单休最后一个工作日，
+            # +6天跳到下周五(+1跳到本周周日然后+5跳到下周大周的周五)
             dtStart = dtStart + timedelta(days=6)
         elif weekIdx == 6:
-            # 1号是星期天，先到当前周最后一天，然后下周小周上6天班
+            # 今天是周日，已经到了当前周最后一天，然后下周大周上5天班
             dtStart = dtStart + timedelta(days=5)
         else:
-            dtStart = dtStart + timedelta(days=(5 - weekIdx))
+            # 今天不是周末，周一到周五，先到当前周最后一天：6 - weekIdx，
+            # 然后下周大周上5天班所以+5
+            dtStart = dtStart + timedelta(days=(6 - weekIdx + 5))
 
     idx = 0
     while True:
@@ -508,13 +510,9 @@ def getLastworkAfterCurrWeek():
         if None == restDouble:
             return 0
         if restDouble and dtStart.weekday() == 4:
-            lastWorkDay.append(
-                addZeroPrefix(currMon) + addZeroPrefix(dtStart.day))
             dtStart = dtStart + timedelta(days=8)
             idx = idx + 1
         elif restDouble == False and dtStart.weekday() == 5:
-            lastWorkDay.append(
-                addZeroPrefix(currMon) + addZeroPrefix(dtStart.day))
             dtStart = dtStart + timedelta(days=6)
             idx = idx + 1
 

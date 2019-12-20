@@ -1214,6 +1214,8 @@ def sendWeekly():
         # 某些同事发了图片格式的周报，解析不了'困难'和'建议'就都是''，不是周报的这两项都是None就不处理
         # 后面再更新新用户的发送标记，因为新用户还没有加到table中
         if hardContents == '' or subjectContents == '':
+            if mailFrom not in lSent:
+                lSent.append(mailFrom)
             # 周报可能是图片格式
             toSendWeeklyTable = updateUserSentRow(toSendWeeklyTable,
                                                   AllStaffs[mailFrom], '✅')

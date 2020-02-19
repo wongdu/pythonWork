@@ -35,6 +35,9 @@ smtp_server = 'smtp.mxhichina.com'
 mysqlConn = None
 mysqlCursor = None
 
+mallNamePrefixs = ['SZ_YLZX_', 'GY_YXC_']
+mallNames = {'SZ_YLZX_': '深圳印力中心', 'GY_YXC_': '贵阳印象城'}
+
 tableStart = '''<table  cellpadding="0" style="border-collapse:collapse;width:888.0px;border-color:#666666;border-width:1.0px;border-style:solid;">
  <colgroup ><col  style="width:108.0px;">
  <col  span="3" style="width:87.0px;">
@@ -52,8 +55,7 @@ tableEnd = '</tbody></table>'
 
 logging.basicConfig(
     level=logging.INFO,
-    format=
-    '%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s: %(message)s',
+    format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s: %(message)s',
     datefmt='%a, %d %b %Y %H:%M:%S')
 
 
@@ -136,60 +138,90 @@ def getEmailSubject():
             dtNow.month) + '.' + addZeroPrefix(dtNow.day)
 
 
-def composeEmail(table1Content, table2Content):
+def composeEmail():
     retContent = ''
     blankLine = '<div><br></div>'
-    wrapInfoStart = '<div style="font-family: ' + 'Microsoft YaHei UI' + ', Tahoma; line-height: normal; clear: both;">'
+    wrapInfoStart = '<div style="font-family: ' + 'Microsoft YaHei UI' + \
+        ', Tahoma; line-height: normal; clear: both;">'
     wrapInfoEnd = '</div>'
-    retContent = retContent + '<body>Hi，各位好:<br/>以下是本周告警统计情况反馈，请查阅，谢谢！！'
-    # 添加两个空白行
-    retContent = retContent + blankLine + blankLine
-    retContent = retContent + '告警表格如下：'
-    retContent = retContent + table1Content
-    retContent = retContent + blankLine 
-    retContent = retContent + '异常表格如下：'
-    retContent = retContent + table2Content
+    retContent = retContent + '<body>Hi，各位好:<br/>以下是本周各个商场告警统计情况反馈，请查阅，谢谢！！'
+    # 准备添加表格，先添加一个空白行
+    retContent = retContent + blankLine
+    for mallPrefix in mallNamePrefixs:
+        # 添加两个空白行
+        retContent = retContent + blankLine + blankLine
+        table1Content = getTableAlarms(mallPrefix)
+        retContent = retContent + mallNames[mallPrefix]+'告警表格如下：'
+        retContent = retContent + table1Content
+        retContent = retContent + blankLine
+
+        table2Content = getTableAlerts(mallPrefix)
+        retContent = retContent + mallNames[mallPrefix]+'异常表格如下：'
+        retContent = retContent + table2Content
+
     retContent = retContent + "</body>"
     # 准备添加hard和suggest，先添加一个空白行
     retContent = retContent + blankLine
     return retContent
 
 
-def getAlarms():
+def getAlarms(mallPrefix):
     global mysqlCursor
     mysqlCursor.execute(
-        'select event_cases.endpoint,events.status,event_cases.note,events.timestamp from events left join event_cases on events.event_caseId=event_cases.id'
+        'select event_cases.endpoint,events.status,event_cases.note,event_cases.metric,events.timestamp \
+            from events left join event_cases on events.event_caseId=event_cases.id \
+                where endpoint like %s', [mallPrefix+'%']
     )
     values = mysqlCursor.fetchall()
     return values
 
 
-def getAlerts():
+def getAlerts(mallPrefix):
     dtNow = datetime.now()
     sinceDate = datetime.now() - timedelta(days=7)
 
     global mysqlCursor
     mysqlCursor.execute(
-        'select endpoint,note,timestamp from alerts where timestamp > %s',
-        (sinceDate.strftime("%Y-%m-%d %H:%M:%S"), ))
+        'select endpoint,note,metric,timestamp from alerts where timestamp > %s and endpoint like %s',
+        [sinceDate.strftime("%Y-%m-%d %H:%M:%S"), mallPrefix+'%'])
     values = mysqlCursor.fetchall()
     return values
 
 
-def getTableAlarms():
-    alarms = getAlarms()
+def getPackageName(event_metric):
+    if event_metric.find("packageName=") == -1:
+        return ''
+    else:
+        return event_metric[event_metric.find("packageName=")+len("packageName="):]
+
+
+def getAlertPackageName(alert_metric):
+    if None == alert_metric:
+        return ''
+    if alert_metric.find("packageName=") == -1:
+        return ''
+    else:
+        nameEnd = alert_metric.find(",")
+        if nameEnd == -1:
+            return alert_metric[alert_metric.find("packageName=")+len("packageName="):]
+        else:
+            return alert_metric[alert_metric.find("packageName=")+len("packageName="):nameEnd]
+
+
+def getTableAlarms(mallPrefix):
+    alarms = getAlarms(mallPrefix)
     alarmsTable = tableStart
 
     # 添加表格头
     tableHeader = rowStart
     tableHeader = tableHeader + '<th>' + '主机名' + '</th>'
     tableHeader = tableHeader + '<th>' + 'note' + '</th>'
-    tableHeader = tableHeader + '<th>' + '告警发生时间' + '</th>'    
+    tableHeader = tableHeader + '<th>' + '告警发生时间' + '</th>'
     tableHeader = tableHeader + rowEnd
     alarmsTable = alarmsTable + tableHeader
 
     for alarm in alarms:
-        if len(alarm) != 4:
+        if len(alarm) != 5:
             continue
 
         if alarm[0] in envTest:
@@ -198,10 +230,12 @@ def getTableAlarms():
         alarmRow = rowStart
         alarmRow = alarmRow + domainStart + alarm[0] + domainEnd
         if alarm[1] == 1:
-            alarmRow = alarmRow + domainStart + alarm[2] + '已恢复' + domainEnd
+            alarmRow = alarmRow + domainStart + \
+                getPackageName(alarm[3]) + alarm[2] + '已恢复' + domainEnd
         else:
-            alarmRow = alarmRow + domainStart + alarm[2] + domainEnd
-        alarmRow = alarmRow + domainStart + alarm[3].strftime(
+            alarmRow = alarmRow + domainStart + \
+                getPackageName(alarm[3]) + alarm[2] + domainEnd
+        alarmRow = alarmRow + domainStart + alarm[4].strftime(
             "%Y-%m-%d %H:%M") + domainEnd
         alarmRow = alarmRow + rowEnd
 
@@ -211,8 +245,8 @@ def getTableAlarms():
     return alarmsTable
 
 
-def getTableAlerts():
-    alerts = getAlerts()
+def getTableAlerts(mallPrefix):
+    alerts = getAlerts(mallPrefix)
     alertsTable = tableStart
 
    # 添加表格头
@@ -224,7 +258,7 @@ def getTableAlerts():
     alertsTable = alertsTable + tableHeader
 
     for alert in alerts:
-        if len(alert) != 3:
+        if len(alert) != 4:
             continue
 
         if alert[0] in envTest:
@@ -232,8 +266,9 @@ def getTableAlerts():
 
         alarmRow = rowStart
         alarmRow = alarmRow + domainStart + alert[0] + domainEnd
-        alarmRow = alarmRow + domainStart + alert[1] + domainEnd
-        alarmRow = alarmRow + domainStart + alert[2].strftime(
+        alarmRow = alarmRow + domainStart + \
+            getAlertPackageName(alert[2]) + alert[1] + domainEnd
+        alarmRow = alarmRow + domainStart + alert[3].strftime(
             "%Y-%m-%d %H:%M") + domainEnd
         alarmRow = alarmRow + rowEnd
 
@@ -248,7 +283,7 @@ def procAlarmWeekly():
         logging.error(u'连接数据库失败:')
         return False
 
-    sendAlarmWeekly(composeEmail(getTableAlarms(), getTableAlerts()))
+    sendAlarmWeekly(composeEmail())
     unInitMysql()
 
 
